@@ -1,9 +1,8 @@
 #include "UART.h"
 static uint8_t Iterator = 0;
 static uint8_t UART_state = IDLE;
-
 // Global function pointer for the application callback
-void (*uart_rx_callback)(uint8_t * PTR) = NULL;
+void (*uart_rx_callback)(uint8_t *PTR) = NULL;
 
 void UART_init(long USART_BAUDRATE)
 {
@@ -30,21 +29,39 @@ void UART_TxChar(char ch)
 
 ISR(USART_RXC_vect)
 {
-
-	static uint8_t Legnth;
-	if (UART_state == IDLE)
+	if ((UART_state == IDLE))
 	{
 		UART_state = RUNNING;
 		Legnth = UDR;
 	}
 	else
 	{
-		if (Iterator < Legnth)
-		{
-			RX_Buffer[Iterator] = UDR;
-			Iterator++;
-		}
-		else
+		// if (Iterator < Legnth)
+		// {
+		// 	RX_Buffer[Iterator] = UDR;
+		// 	Iterator++;
+		// }
+		// else
+		// {
+		// 	UART_state = IDLE;
+		// 	Iterator = 0;
+		// 	uart_rx_callback(RX_Buffer);
+		// }
+
+		// if (Iterator == Legnth)
+		// {
+		// 	UART_state = IDLE;
+		// 	Iterator = 0;
+		// 	uart_rx_callback(RX_Buffer);
+		// }
+		// else
+		// {
+		// 	RX_Buffer[Iterator] = UDR;
+		// 	Iterator++;
+		// }
+		RX_Buffer[Iterator] = UDR;
+		Iterator++;
+		if (Legnth == Iterator)
 		{
 			UART_state = IDLE;
 			Iterator = 0;

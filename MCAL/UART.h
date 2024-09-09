@@ -18,7 +18,9 @@
 void UART_init(long USART_BAUDRATE);
 unsigned char UART_RxChar();
 void UART_TxChar(char ch);
-void UART_SetRxCallback(void (*callback)(uint8_t * PTR));
+void UART_SetRxCallback(void (*callback)(uint8_t *PTR));
 
 uint8_t RX_Buffer[255];
+uint8_t Legnth;
+
 #endif
