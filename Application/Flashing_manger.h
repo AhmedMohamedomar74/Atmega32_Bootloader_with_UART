@@ -42,4 +42,6 @@ void boot_program_page (uint32_t page, uint8_t *buf);
 
 uint8_t LOC_vidCheckFlashCRC(uint16_t u16StartAdd, uint16_t u16EndAdd, uint16_t u16CRC);
 
+void Move_interrupts(void);
+
 #endif /* APPLICATION_FLASHING_MANGER_H_ */

@@ -212,4 +212,11 @@ uint8_t LOC_vidCheckFlashCRC(uint16_t u16StartAdd, uint16_t u16EndAdd, uint16_t 
     }
 }
 
+void Move_interrupts(void)
+{
+	/* Enable change of interrupt vectors */
+	GICR = (1<<IVCE);
+	/* Move interrupts to boot Flash section */
+	GICR = (1<<IVSEL);
+}
 
