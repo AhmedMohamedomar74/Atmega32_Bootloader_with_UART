@@ -49,6 +49,8 @@ void Move_interrupts(void);
 
 void write_buffer_to_flash(uint32_t start_page, uint8_t *data_buffer, uint32_t buffer_size);
 
+void Move_interrupts_to_application(void);
+
 void jump_to_application(void);
 
 #endif /* APPLICATION_FLASHING_MANGER_H_ */

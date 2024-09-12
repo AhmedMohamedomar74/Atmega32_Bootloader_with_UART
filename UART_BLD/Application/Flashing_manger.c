@@ -233,6 +233,15 @@ void Move_interrupts(void)
 	GICR = (1<<IVSEL);
 }
 
+void Move_interrupts_to_application(void)
+{
+    /* Enable change of interrupt vectors */
+    GICR = (1<<IVCE);
+    /* Move interrupts to the application Flash section (reset to 0x0000) */
+    GICR = (0<<IVSEL);  // Clear IVSEL to move interrupts to the application
+}
+
+
 void jump_to_application(void)
 {
     // Disable interrupts before jumping
