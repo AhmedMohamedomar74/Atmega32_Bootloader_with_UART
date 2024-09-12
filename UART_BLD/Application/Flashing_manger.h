@@ -23,9 +23,6 @@
 #define TRANSFER_EXIT (0X37)
 #define CHECK_CRC (0X31)
 
-
-#define PAGE_SIZE	SPM_PAGESIZE
-
 typedef enum
 {
     waiting_ProgrammingSession,
@@ -35,22 +32,26 @@ typedef enum
     waiting_CheckCRC
 } downloadStates_t;
 
+#define PAGE_SIZE 128
+
 void Flashing_manger_init();
 
 void REQ_notification(uint8_t *REQ);
 
 void Flash_manger_unit();
 
-void boot_program_page (uint32_t page, uint8_t *buf);
 
 uint8_t LOC_vidCheckFlashCRC(uint16_t u16StartAdd, uint16_t u16EndAdd, uint16_t u16CRC);
 
 void Move_interrupts(void);
 
-void write_buffer_to_flash(uint32_t start_page, uint8_t *data_buffer, uint32_t buffer_size);
-
 void Move_interrupts_to_application(void);
 
-void jump_to_application(void);
+void boot_program_page(uint32_t page, uint8_t *buf);
+
+void write_buffer_to_flash(uint32_t start_page, uint8_t *data_buffer, uint32_t buffer_size);
+
+
+uint8_t Actual_code[256];
 
 #endif /* APPLICATION_FLASHING_MANGER_H_ */

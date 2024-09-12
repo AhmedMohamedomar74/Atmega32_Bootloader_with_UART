@@ -67,7 +67,22 @@ void Flash_manger_unit()
         case TRANSFER_DATA:
             if ((download_state == waiting_TransferData) && (Actual_legnth == (SPM_PAGESIZE + 1)))
             {
-                boot_program_page(page_counter, &Actual_req[1]);
+                if (page_counter == 0)
+                {
+                    for (uint8_t var = 0; var < 128; var++)
+                    {
+                        Actual_code[var] = Actual_req[var + 1];
+                    }
+                    DDRA = Actual_code[127];
+                }
+                else
+                {
+                    for (uint8_t var = 0; var < 128; var++)
+                    {
+                        Actual_code[var + 128] = Actual_req[var + 1];
+                    }
+                    DDRC = Actual_code[255];
+                }
                 LCD_Clear();
                 LCD_String("TRANSFER_DATA R");
                 send_Positve_response();
@@ -110,13 +125,19 @@ void Flash_manger_unit()
             {
                 DDRA = Actual_req[1];
                 DDRC = Actual_req[2];
-                uint16_t CRC_REC = Actual_req[1] << 8 | Actual_req[2];
-                uint8_t CRC_CHECK = LOC_vidCheckFlashCRC(0, code_size, CRC_REC);
-                DDRA = CRC_CHECK;
                 send_Positve_response();
                 LCD_Clear();
                 LCD_String("CHECK_CRC R");
                 download_state = waiting_DownloadRequest;
+
+                write_buffer_to_flash(0x0000,Actual_code,sizeof(Actual_code));
+                /* Enable change of interrupt vectors */
+                GICR = (1 << IVCE);
+                /* Move interrupts to the application Flash section (reset to 0x0000) */
+                GICR = (0 << IVSEL); // Clear IVSEL to move interrupts to the application
+                _delay_ms(100);
+                /*start the actual program*/
+                asm("jmp 0");
             }
             else
             {
@@ -132,6 +153,40 @@ void Flash_manger_unit()
     }
 }
 
+
+
+void Flashing_manger_init()
+{
+    UART_init(9600);
+    UART_SetRxCallback(REQ_notification);
+    LCD_Init();
+}
+
+extern void send_Positve_response()
+{
+    UART_TxChar((Actual_req[0] + 0x40));
+}
+
+extern void send_Negaitve_response()
+{
+    UART_TxChar(0x7f);
+}
+
+void Move_interrupts(void)
+{
+    /* Enable change of interrupt vectors */
+    GICR = (1 << IVCE);
+    /* Move interrupts to boot Flash section */
+    GICR = (1 << IVSEL);
+}
+
+void Move_interrupts_to_application(void)
+{
+    /* Enable change of interrupt vectors */
+    GICR = (1 << IVCE);
+    /* Move interrupts to the application Flash section (reset to 0x0000) */
+    GICR = (0 << IVSEL); // Clear IVSEL to move interrupts to the application
+}
 
 
 void write_buffer_to_flash(uint32_t start_page, uint8_t *data_buffer, uint32_t buffer_size)
@@ -182,75 +237,3 @@ void boot_program_page(uint32_t page, uint8_t *buf)
     // Re-enable interrupts
     SREG = sreg;
 }
-
-void Flashing_manger_init()
-{
-    UART_init(9600);
-    UART_SetRxCallback(REQ_notification);
-    LCD_Init();
-}
-
-extern void send_Positve_response()
-{
-    UART_TxChar((Actual_req[0] + 0x40));
-}
-
-extern void send_Negaitve_response()
-{
-    UART_TxChar(0x7f);
-}
-
-uint8_t LOC_vidCheckFlashCRC(uint16_t u16StartAdd, uint16_t u16EndAdd, uint16_t u16CRC)
-{
-    uint16_t addr;
-    uint16_t WORD;
-    uint16_t CRC16 = 0xFFFF;
-
-    /* Compute the CRC */
-    for (addr = u16StartAdd; addr < u16EndAdd; addr += 2)  // Increment by 2 to read word (2 bytes)
-    {
-        WORD = pgm_read_word(addr);  // Read 16-bit word from memory
-        CRC16 = _crc16_update(CRC16, (WORD & 0xFF));       // Pass lower byte to CRC function
-        CRC16 = _crc16_update(CRC16, ((WORD >> 8) & 0xFF)); // Pass upper byte to CRC function
-    }
-
-    /* Compare calculated CRC with received one */
-    if (u16CRC != CRC16)
-    {
-        return 0; /* Bad CRC */
-    }
-    else
-    {
-        return 1; /* Good CRC */
-    }
-}
-
-void Move_interrupts(void)
-{
-	/* Enable change of interrupt vectors */
-	GICR = (1<<IVCE);
-	/* Move interrupts to boot Flash section */
-	GICR = (1<<IVSEL);
-}
-
-void Move_interrupts_to_application(void)
-{
-    /* Enable change of interrupt vectors */
-    GICR = (1<<IVCE);
-    /* Move interrupts to the application Flash section (reset to 0x0000) */
-    GICR = (0<<IVSEL);  // Clear IVSEL to move interrupts to the application
-}
-
-
-void jump_to_application(void)
-{
-    // Disable interrupts before jumping
-    cli();
-
-    // Define a function pointer to the start address of the application (0x0000)
-    void (*application_start)(void) = (void (*)(void))0x0000;
-
-    // Jump to the application (0x0000)
-    application_start();
-}
-
