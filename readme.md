@@ -18,7 +18,7 @@ This project implements a UART-based bootloader for the ATmega32 microcontroller
 
 Below is a visual representation of how the flashing unit communicates with the ATmega32 via the UDS protocol.
 
-![Communication Flow](Documentiation\Communication.png)
+![Communication Flow](Documentiation/Communication.png)
 
 *This diagram illustrates the step-by-step communication and data exchange between the host and the ATmega32 target device.*
 
@@ -26,7 +26,7 @@ Below is a visual representation of how the flashing unit communicates with the 
 
 The following flowchart details how the ATmega32 handles incoming UDS requests during the bootloading process:
 
-![ATmega32 Flowchart](Documentiation\Flowchart.png)
+![ATmega32 Flowchart](Documentiation/Flowchart.png)
 
 *This flowchart shows the logic flow on the ATmega32, from validating requests to performing actions and sending responses.*
 
@@ -34,7 +34,7 @@ The following flowchart details how the ATmega32 handles incoming UDS requests d
 
 Here’s a demo of the UART bootloader in action:
 
-![Demo GIF](Documentiation\DEMO.gif)
+![Demo GIF](Documentiation/DEMO.gif)
 
 *This GIF demonstrates the communication between the Python flashing script and the ATmega32 microcontroller during the flashing process.*
 
